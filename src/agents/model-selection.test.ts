@@ -206,6 +206,24 @@ describe("model-selection", () => {
       expect(parseModelRef("anthropic/", "anthropic")).toBeNull();
       expect(parseModelRef("/model", "anthropic")).toBeNull();
     });
+
+    it("passes through non-alias anthropic model ids unchanged", () => {
+      // Custom vendor model IDs that don't match any alias must be returned as-is.
+      // This also validates that ANTHROPIC_MODEL_ALIASES is accessible at parse time
+      // (regression for TDZ errors caused by circular module deps in bundled output).
+      expect(parseModelRef("anthropic/claude-4.6-opus", "openai")).toEqual({
+        provider: "anthropic",
+        model: "claude-4.6-opus",
+      });
+      expect(parseModelRef("claude-4.6-opus", "anthropic")).toEqual({
+        provider: "anthropic",
+        model: "claude-4.6-opus",
+      });
+      expect(parseModelRef("anthropic/my-custom-model-v1", "openai")).toEqual({
+        provider: "anthropic",
+        model: "my-custom-model-v1",
+      });
+    });
   });
 
   describe("inferUniqueProviderFromConfiguredModels", () => {
